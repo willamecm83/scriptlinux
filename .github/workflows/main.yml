@@ -8,9 +8,9 @@ on:
       - main
 
 permissions:
-  contents: write   # necessário para criar tags e releases
-  issues: write     # necessário para criar labels via API
-  pull-requests: read # para ler labels dos PRs
+  contents: write      # criar tags e releases
+  issues: write        # criar labels
+  pull-requests: read  # ler labels do PR
 
 jobs:
   create-release:
@@ -28,7 +28,7 @@ jobs:
           for label in major minor patch; do
             echo "Verificando label: $label"
             RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
-              -H "Authorization: token ${{ secrets.GH_PERSONAL_TOKEN }}" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               -H "Accept: application/vnd.github.v3+json" \
               https://api.github.com/repos/${{ github.repository }}/labels/$label)
 
@@ -39,7 +39,7 @@ jobs:
               if [ "$label" = "patch" ]; then COLOR="0e8a16"; DESC="Incrementa versão patch"; fi
 
               curl -s -X POST \
-                -H "Authorization: token ${{ secrets.GH_PERSONAL_TOKEN }}" \
+                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                 -H "Accept: application/vnd.github.v3+json" \
                 https://api.github.com/repos/${{ github.repository }}/labels \
                 -d "{\"name\":\"$label\",\"color\":\"$COLOR\",\"description\":\"$DESC\"}"
@@ -81,12 +81,9 @@ jobs:
 
           BUMP=${{ steps.bump_type.outputs.bump }}
           if [ "$BUMP" = "major" ]; then
-            MAJOR=$((MAJOR+1))
-            MINOR=0
-            PATCH=0
+            MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0
           elif [ "$BUMP" = "minor" ]; then
-            MINOR=$((MINOR+1))
-            PATCH=0
+            MINOR=$((MINOR+1)); PATCH=0
           else
             PATCH=$((PATCH+1))
           fi
@@ -98,12 +95,11 @@ jobs:
       - name: Generate Changelog
         id: changelog
         run: |
-          LAST_TAG=${{ steps.get_last_tag.outputs.last_tag }}
+          LAST_TAG=${{ steps.get_tag.outputs.tag }}
           echo "Gerando changelog entre $LAST_TAG...HEAD"
 
           git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" > CHANGELOG.md
 
-          # Corrigido: delimitador na primeira coluna, sem espaços
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           cat CHANGELOG.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -130,4 +126,4 @@ jobs:
             ## 📌 Changelog
             ${{ steps.changelog.outputs.changelog }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PERSONAL_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
