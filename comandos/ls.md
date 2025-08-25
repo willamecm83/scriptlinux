@@ -7,3 +7,7 @@ O comando `ls`serve para listar arquivos e diretorios.
 ### -a
 
 Mostra arquivos ocultos
+
+### -l
+
+Mostra detalhado
