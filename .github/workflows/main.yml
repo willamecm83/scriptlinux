@@ -105,27 +105,25 @@ jobs:
           LAST_TAG=${{ steps.get_tag.outputs.tag }}
           echo "Gerando changelog entre $LAST_TAG...HEAD"
 
-          # Garante que a tag exista; se não existir, considera todo o histórico
           if git rev-parse "$LAST_TAG" >/dev/null 2>&1; then
             RANGE="$LAST_TAG..HEAD"
           else
             RANGE="HEAD"
           fi
 
-          # Gera o changelog (sem merges; remova --no-merges se quiser incluir)
           git log $RANGE --no-merges --pretty=format:"- %s (%h)" > CHANGELOG.md || true
 
-          # Se vazio, coloca uma mensagem padrão
           if [ ! -s CHANGELOG.md ]; then
             echo "- Sem mudanças desde $LAST_TAG" > CHANGELOG.md
           fi
 
-          # Usa delimitador único e um único redirecionamento para o arquivo de saída
+          # Usa delimitador único e garante newline no final
           DELIM="__CHANGELOG_$(date +%s)__"
           {
             echo "changelog<<$DELIM"
             cat CHANGELOG.md
             echo "$DELIM"
+            echo    # <<< esta linha adiciona a newline obrigatória
           } >> "$GITHUB_OUTPUT"
 
       - name: Create Git Tag
