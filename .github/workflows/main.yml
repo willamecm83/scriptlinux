@@ -58,12 +58,17 @@ jobs:
       - name: Decide bump type from labels
         id: bump_type
         run: |
-          LABELS="${{ toJson(github.event.pull_request.labels) }}"
-          echo "Labels do PR: $LABELS"
+          LABELS_JSON='${{ toJson(github.event.pull_request.labels) }}'
+          echo "Labels do PR: $LABELS_JSON"
 
-          if echo "$LABELS" | grep -q '"name":"major"'; then
+          # Extrai os nomes dos labels (array simples)
+          LABEL_NAMES=$(echo "$LABELS_JSON" | jq -r '.[].name')
+
+          echo "Nomes dos labels: $LABEL_NAMES"
+
+          if echo "$LABEL_NAMES" | grep -q "major"; then
             echo "bump=major" >> $GITHUB_OUTPUT
-          elif echo "$LABELS" | grep -q '"name":"minor"'; then
+          elif echo "$LABEL_NAMES" | grep -q "minor"; then
             echo "bump=minor" >> $GITHUB_OUTPUT
           else
             echo "bump=patch" >> $GITHUB_OUTPUT
