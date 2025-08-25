@@ -121,9 +121,10 @@ jobs:
           {
             echo "changelog<<$DELIM"
             cat CHANGELOG.md
+            echo
             echo "$DELIM"
-          } | tee -a "$GITHUB_OUTPUT"
-        
+          } >> "$GITHUB_OUTPUT"
+
       - name: Create Git Tag
         run: |
           git config user.name "github-actions[bot]"
