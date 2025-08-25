@@ -1,1 +1,3 @@
-# mldir
+# mkdir
+
+cria pastas
