@@ -117,15 +117,13 @@ jobs:
             echo "- Sem mudanças desde $LAST_TAG" > CHANGELOG.md
           fi
 
-          # Usa delimitador único e garante newline no final
-          DELIM="__CHANGELOG_$(date +%s)__"
+          DELIM="EOF_$(date +%s)"
           {
             echo "changelog<<$DELIM"
             cat CHANGELOG.md
             echo "$DELIM"
-            echo    # <<< esta linha adiciona a newline obrigatória
-          } >> "$GITHUB_OUTPUT"
-
+          } | tee -a "$GITHUB_OUTPUT"
+        
       - name: Create Git Tag
         run: |
           git config user.name "github-actions[bot]"
