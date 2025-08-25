@@ -98,17 +98,12 @@ jobs:
       - name: Generate Changelog
         id: changelog
         run: |
-          LAST_TAG=${{ steps.get_tag.outputs.tag }}
-          NEW_TAG=${{ steps.bump_version.outputs.new_version }}
-
+          LAST_TAG=${{ steps.get_last_tag.outputs.last_tag }}
           echo "Gerando changelog entre $LAST_TAG...HEAD"
 
-          if [ "$LAST_TAG" = "v1.0.0" ] && ! git rev-parse v1.0.0 >/dev/null 2>&1; then
-            git log --pretty=format:"- %s (%h)" > CHANGELOG.md
-          else
-            git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" > CHANGELOG.md
-          fi
+          git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" > CHANGELOG.md
 
+          # Corrigido: delimitador na primeira coluna, sem espaços
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           cat CHANGELOG.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
